@@ -16,18 +16,37 @@
   limitations under the License.
 -->
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0">
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+           xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.5.0">
 
+    <ext:property-placeholder placeholder-prefix="$[" placeholder-suffix="]" />
+    
     <cm:property-placeholder persistent-id="org.apache.directory" update-strategy="reload">
         <cm:default-properties>
             <cm:property name="ldap-server.port" value="10389"/>
+            <cm:property name="ldap-server.workdir" value="$[karaf.data]/apacheds"/>
         </cm:default-properties>
     </cm:property-placeholder>
+
+    <bean id="instanceLayout" class="org.apache.directory.server.core.api.InstanceLayout">
+        <argument index="0" value="$[karaf.data]/apacheds" />
+        <property name="confDir" value="$[karaf.etc]" />
+        <property name="cacheDir" value="$[karaf.data]/apacheds/cache" />
+        <property name="logDir" value="$[karaf.data]/apacheds/log" />
+        <property name="partitionsDir" value="$[karaf.data]/apacheds/partitions" />
+        <property name="runDir" value="$[karaf.data]/apacheds/run" />
+        <property name="replDirectory" value="$[karaf.data]/apacheds/repl" />
+    </bean>
+
+<!--    <bean id="cacheService" id="org.apache.directory.server.core.api.CacheService">
+    </bean>-->
 
     <bean id="ldapServer" class="org.apache.directory.karaf.LdapServerBean"
           init-method="startServer"
           destroy-method="stopServer">
-        <property name="port" value="\$\{ldap-server.port\}" />
+        <argument index="0" ref="instanceLayout" />
+        <!--<argument index="1" ref="cacheService" />-->
+        <property name="port" value="${ldap-server.port}" />
     </bean>
 
 </blueprint>

@@ -5,10 +5,7 @@
  */
 package org.apache.directory.karaf;
 
-import org.apache.directory.server.core.DefaultDirectoryService;
-import org.apache.directory.server.core.api.DirectoryService;
-import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.server.protocol.shared.transport.TcpTransport;
+import org.apache.directory.server.core.api.InstanceLayout;
 
 /**
  * Starts an ApacheDS LDAP server.
@@ -20,34 +17,29 @@ public class LdapServerBean {
      */
     private int port = 10389;
 
-    private DirectoryService directoryService;
-    private org.apache.directory.server.ldap.LdapServer ldapServer;
-    private TcpTransport ldapTransport;
+    private ApacheDsService apacheDsService;
+    private final InstanceLayout instanceLayout;
 
-    public LdapServerBean() throws Exception {
-        directoryService = new DefaultDirectoryService();
-        ldapServer = new LdapServer();
-        ldapServer.setDirectoryService(directoryService);
+    public LdapServerBean(InstanceLayout instanceLayout) throws Exception {
+        apacheDsService = new ApacheDsService();
+        this.instanceLayout = instanceLayout;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     public void setPort(int port) {
         this.port = port;
-        if (ldapTransport != null) {
-            ldapTransport.setPort(port);
-        }
     }
 
     public void startServer() throws Exception {
-        ldapTransport = new TcpTransport(port);
-        ldapServer.setTransports(ldapTransport);
+        apacheDsService.start(instanceLayout);
 
-        directoryService.startup();
-        ldapServer.start();
     }
 
     public void stopServer() throws Exception {
-        ldapServer.stop();
-        directoryService.shutdown();
+        apacheDsService.stop();
     }
 
 }
